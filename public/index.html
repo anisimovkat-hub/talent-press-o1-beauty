@@ -18,6 +18,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=Italiana&display=swap" rel="stylesheet">
 
 <style>
+@font-face {
+  font-family: 'TalentPressMono';
+  src: url('assets/fonts/IBMPlexMono-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    DESIGN TOKENS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -2294,7 +2302,7 @@ header .btn[href="#contact"]:hover{
   }
 }
 
-/* Clean yellow wordmark: avoids white edges from raster logo exports */
+/* Text wordmark */
 .logo-link{
   overflow:visible !important;
 }
@@ -2302,26 +2310,25 @@ header .btn[href="#contact"]:hover{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  height:34px;
-  padding:0 22px;
-  background:#ffd21a;
-  color:#141210;
+  height:auto;
+  padding:0;
+  background:transparent;
+  color:var(--white);
   border:0;
-  border-radius:12px;
+  border-radius:0;
   box-shadow:none;
-  font-family:var(--sans);
-  font-size:23px;
-  font-weight:900;
+  font-family:'TalentPressMono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size:21px;
+  font-weight:600;
   line-height:1;
-  letter-spacing:.04em;
+  letter-spacing:.11em;
+  text-transform:uppercase;
   white-space:nowrap;
 }
 @media(max-width:640px){
   .logo-wordmark{
-    height:30px;
-    padding:0 16px;
-    border-radius:10px;
-    font-size:18px;
+    font-size:16px;
+    letter-spacing:.09em;
   }
 }
 
