@@ -50,6 +50,7 @@
   --serif:   'Cormorant Garamond', 'Times New Roman', serif;
   --display: 'Italiana', 'Cormorant Garamond', serif;
   --sans:    'Inter', system-ui, -apple-system, sans-serif;
+  --mono:    'TalentPressMono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Spacing */
   --sec: 96px 64px;
@@ -2324,7 +2325,7 @@ header .btn[href="#contact"]:hover{
   border:0;
   border-radius:0;
   box-shadow:none;
-  font-family:'TalentPressMono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family:var(--mono);
   font-size:21px;
   font-weight:600;
   line-height:1;
@@ -2337,6 +2338,50 @@ header .btn[href="#contact"]:hover{
     font-size:16px;
     letter-spacing:.09em;
   }
+}
+
+/* Straight headings use the Talent Press wordmark font.
+   Display headings with serif type stay unchanged. */
+.label,
+.hero-eyebrow,
+.hero-stat-lbl,
+nav a,
+.btn,
+.btn-cta-inv,
+.btn-tariff,
+.btn-full,
+.sticky-btn,
+.sphere-t,
+.sphere-cta-q,
+.scenario-kicker,
+.prob-t,
+.crit-t,
+.tape-t,
+.approach-t,
+.pub-t,
+.stack-t,
+.why-adv-t,
+.why-ml,
+.get-t,
+.get-cta-card .get-cta-title,
+.tariff-lbl,
+.tariff-name,
+.case-name,
+.case-role,
+.faq-q,
+.final-bullets li,
+.ft-col-ttl,
+.team-name,
+.team-role,
+.quiz-step-lbl,
+.r-lbl,
+.cb-lbl,
+.m-tab,
+.quiz-inf,
+.btn-qback,
+.btn-qnext{
+  font-family:var(--mono) !important;
+  font-weight:600;
 }
 
 /* Team cards */
@@ -2369,33 +2414,35 @@ header .btn[href="#contact"]:hover{
     display:grid !important;
     grid-template-columns:112px minmax(0,1fr) !important;
     height:auto !important;
-    min-height:120px;
+    min-height:126px;
     flex:initial !important;
     border-radius:16px !important;
   }
   .team-card img{
     width:100% !important;
     height:100% !important;
-    min-height:120px;
+    min-height:126px;
     aspect-ratio:auto !important;
     object-fit:cover !important;
   }
   .team-card-body{
-    padding:9px 10px 9px 16px;
+    padding:11px 12px 11px 17px;
   }
   .team-name{
-    font-size:13.5px;
-    margin-bottom:3px;
+    font-size:15px;
+    line-height:1.16;
+    margin-bottom:4px;
   }
   .team-role{
-    font-size:7px;
-    letter-spacing:.085em;
-    margin-bottom:5px;
+    font-size:8px;
+    line-height:1.35;
+    letter-spacing:.075em;
+    margin-bottom:7px;
   }
   .team-text,
   .team-list{
-    font-size:10px;
-    line-height:1.3;
+    font-size:12px;
+    line-height:1.34;
   }
   .team-list{
     gap:4px;
