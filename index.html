@@ -2396,6 +2396,17 @@ nav a,
   border-radius:0 !important;
   transform-origin:center;
 }
+.team-card:nth-child(1) img{ object-position:50% 34% !important; }
+.team-card:nth-child(2) img{ object-position:50% 30% !important; }
+.team-card:nth-child(3) img{ object-position:50% 26% !important; }
+.team-card:nth-child(4) img{ object-position:50% 22% !important; }
+.team-card:nth-child(5) img{ object-position:50% 18% !important; }
+.team-card:nth-child(6) img{
+  object-position:50% 20% !important;
+  transform:scale(1.04);
+}
+.team-card:nth-child(7) img{ object-position:50% 24% !important; }
+
 @media(max-width:900px){
   .team-grid{
     display:flex !important;
@@ -2468,6 +2479,65 @@ nav a,
   }
   .team-card-body > .team-text:not(:first-of-type){
     display:none;
+  }
+}
+
+/* Mobile tariffs: compact 2 x 2 layout */
+@media(max-width:640px){
+  #tariffs .tariff-grid{
+    display:grid !important;
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    gap:10px !important;
+    background:transparent !important;
+    border:0 !important;
+    margin-top:28px !important;
+    align-items:stretch !important;
+  }
+  #tariffs .tariff-card{
+    min-height:0 !important;
+    height:auto !important;
+    border:1px solid rgba(166,124,82,.14) !important;
+    overflow:hidden !important;
+  }
+  #tariffs .tariff-head{
+    padding:14px 12px 12px !important;
+    min-height:136px !important;
+  }
+  #tariffs .tariff-lbl{
+    font-size:8px !important;
+    line-height:1.2 !important;
+    letter-spacing:.12em !important;
+    margin-bottom:9px !important;
+  }
+  #tariffs .tariff-name{
+    font-size:15px !important;
+    line-height:1.18 !important;
+    margin-bottom:10px !important;
+  }
+  #tariffs .tariff-price{
+    font-size:22px !important;
+    line-height:1 !important;
+  }
+  #tariffs .tariff-body{
+    padding:12px 12px 14px !important;
+  }
+  #tariffs .tariff-desc{
+    font-size:10.5px !important;
+    line-height:1.35 !important;
+    margin-bottom:10px !important;
+  }
+  #tariffs .tariff-list{
+    gap:7px !important;
+  }
+  #tariffs .tariff-list li{
+    font-size:10.5px !important;
+    line-height:1.28 !important;
+    gap:6px !important;
+  }
+  #tariffs .tariff-list li::before{
+    width:11px !important;
+    height:11px !important;
+    margin-top:1px !important;
   }
 }
 
