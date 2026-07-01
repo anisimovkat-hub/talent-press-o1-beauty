@@ -1,2 +1,6 @@
 name = "talent-press-o1-beauty"
 pages_build_output_dir = "public"
+
+[[kv_namespaces]]
+binding = "AMO_TOKENS"
+id = "86dcfc1cd1b2495ca27f3e3ae1cfdfac"
