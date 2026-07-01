@@ -3438,24 +3438,37 @@ function fillUtm(f){
   var pu=f&&f.querySelector('[name="page_url"]');if(pu)pu.value=window.location.href;
 }
 
-/* WEBHOOK */
-var WH='ВСТАВЬТЕ_URL_ВАШЕГО_GOOGLE_SCRIPT';
-async function sendWH(data){
-  if(WH.indexOf('ВСТАВЬТЕ')>-1){console.log('Form:',data);return;}
-  try{await fetch(WH+'?'+new URLSearchParams(data),{method:'GET',mode:'no-cors'});}catch(x){}
+/* LEADS */
+function showLeadError(message){
+  alert(message||'Не получилось отправить заявку. Попробуйте ещё раз или напишите нам в Telegram.');
+}
+async function submitLead(data){
+  var res=await fetch('/api/lead',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  });
+  if(!res.ok)throw new Error('Lead submit failed');
+  var out=await res.json().catch(function(){return {};});
+  if(!out.ok)throw new Error('Lead submit failed');
 }
 
 /* MAIN FORM */
-document.getElementById('mainForm').addEventListener('submit',function(e){
+document.getElementById('mainForm').addEventListener('submit',async function(e){
   e.preventDefault();fillUtm(this);
   var n=this.querySelector('[name="name"]'),p=this.querySelector('[name="phone"]');
   if(!n.value.trim()){n.focus();return;}
   if(!p.value.trim()||p.value.length<5){p.focus();return;}
   var btn=document.getElementById('mainBtn');btn.disabled=true;btn.textContent='Отправляем...';
   var data={};new FormData(this).forEach(function(v,k){data[k]=v;});
-  data.ts=new Date().toISOString();
-  sendWH(data);fire('form_lead_success');fireConv();
-  this.style.display='none';document.getElementById('mainOk').classList.add('show');
+  data.ts=new Date().toISOString();data.source='main_form';
+  try{
+    await submitLead(data);fire('form_lead_success');fireConv();
+    this.style.display='none';document.getElementById('mainOk').classList.add('show');
+  }catch(err){
+    btn.disabled=false;btn.textContent='Обсудить мой кейс →';
+    showLeadError('Не получилось отправить заявку. Попробуйте ещё раз или напишите нам в Telegram.');
+  }
 });
 
 /* FAQ */
@@ -3524,16 +3537,23 @@ function collectStep(n){
   }
 }
 
-function qNext(){
+async function qNext(){
   collectStep(qStep);
   if(qStep===qTotal){
+    if(!qData.phone||qData.phone.length<5){document.getElementById('q6_phone').focus();return;}
+    var nextBtn=document.getElementById('btnNext');nextBtn.disabled=true;nextBtn.textContent='Отправляем...';
     var p=new URLSearchParams(window.location.search);
     ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){qData[k]=p.get(k)||'';});
     qData.page_url=window.location.href;qData.ts=new Date().toISOString();qData.source='quiz';qData.quiz_source=qSource;
-    sendWH(qData);fire('form_quiz_success');fireConv();
-    document.getElementById('quizBody').style.display='none';
-    document.getElementById('quizFoot').style.display='none';
-    document.getElementById('quizSucc').style.display='block';
+    try{
+      await submitLead(qData);fire('form_quiz_success');fireConv();
+      document.getElementById('quizBody').style.display='none';
+      document.getElementById('quizFoot').style.display='none';
+      document.getElementById('quizSucc').style.display='block';
+    }catch(err){
+      nextBtn.disabled=false;nextBtn.textContent='Отправить анкету →';
+      showLeadError('Не получилось отправить анкету. Попробуйте ещё раз или напишите нам в Telegram.');
+    }
     return;
   }
   showQ(qStep+1);
