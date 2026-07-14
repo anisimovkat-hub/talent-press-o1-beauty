@@ -1223,6 +1223,9 @@ footer {
 .cb-opt.sel .cb-sq { border-color:var(--gold); background:var(--gold); }
 .cb-opt.sel .cb-sq::after { content:'✓'; font-size:10px; color:var(--ink); font-weight:700; }
 .cb-lbl { font-size:12px; font-weight:500; color:var(--ink); }
+.q-service-grid { grid-template-columns:1fr; }
+.q-contact-grid { grid-template-columns:1fr 1fr; }
+.q-note { font-size:11px; color:rgba(20,18,16,.38); line-height:1.5; margin-top:10px; }
 .m-tabs { display:flex; gap:0; margin-bottom:14px; border:1px solid rgba(166,124,82,.2); }
 .m-tab {
   flex:1; padding:11px; text-align:center; cursor:pointer;
@@ -2727,7 +2730,7 @@ alt=""></noscript>
     <a href="#cases">Кейсы</a>
     <a href="#faq">FAQ</a>
   </nav>
-  <a class="btn btn-gold" href="#contact" onclick="fire('click_cta_header')">Оставить заявку на консультацию</a>
+  <a class="btn btn-gold" href="#contact" onclick="event.preventDefault();openQuiz('header');fire('click_cta_header')">Оставить заявку на консультацию</a>
   <button class="mobile-menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="toggleMobileMenu()">
     <span></span><span></span><span></span>
   </button>
@@ -3351,47 +3354,53 @@ alt=""></noscript>
       <div id="qs1">
         <div class="quiz-step-lbl">Шаг 1 из 6</div>
         <div class="quiz-q">По какой профессии или сфере экспертизы планируете подаваться на визу O-1?</div>
-        <div class="quiz-hint">В какой сфере у вас есть значимые достижения?</div>
+        <div class="quiz-hint">Обязательное поле.</div>
         <input type="text" class="q-input" id="q1_sphere" placeholder="Например: бровист, визажист, стилист по волосам, мастер маникюра, косметолог...">
       </div>
 
       <div id="qs2" style="display:none">
         <div class="quiz-step-lbl">Шаг 2 из 6</div>
         <div class="quiz-q">Сколько у вас лет опыта в этой сфере?</div>
+        <div class="quiz-hint">Обязательное поле.</div>
         <input type="text" class="q-input" id="q2_experience" placeholder="Например: 8 лет">
       </div>
 
       <div id="qs3" style="display:none">
         <div class="quiz-step-lbl">Шаг 3 из 6</div>
-        <div class="quiz-q">В каком статусе вы находитесь в США в данный момент?</div>
-        <div class="quiz-hint">Если вы в США — укажите текущий статус.</div>
-        <input type="text" class="q-input" id="q3_status" placeholder="Например: B1/B2, H1B, нет статуса, не в США...">
+        <div class="quiz-q">Где вы сейчас находитесь?<br>Если вы в США, то какой у вас юридический статус (тип визы)?</div>
+        <div class="quiz-hint">Обязательное поле.</div>
+        <input type="text" class="q-input" id="q3_status" placeholder="Например: в США, B1/B2; не в США; в процессе переезда...">
       </div>
 
       <div id="qs4" style="display:none">
         <div class="quiz-step-lbl">Шаг 4 из 6</div>
-        <div class="quiz-q">Чего вам не хватает для подачи на визу талантов O-1?</div>
-        <div class="quiz-hint">Каких критериев? (если знаете)</div>
-        <textarea class="q-textarea" id="q4_criteria" placeholder="Опишите, каких критериев или доказательств не хватает..."></textarea>
+        <div class="quiz-q">Чего, на ваш взгляд, сейчас не хватает для сильного O-1 кейса?</div>
+        <div class="quiz-hint">Необязательное поле.</div>
+        <input type="text" class="q-input" id="q4_criteria" placeholder="Например: публикаций, рекомендаций, подтверждений, работодателя...">
       </div>
 
       <div id="qs5" style="display:none">
         <div class="quiz-step-lbl">Шаг 5 из 6</div>
-        <div class="quiz-q">Какой у вас бюджет в $ на закрытие PR критериев для визы талантов?</div>
-        <div class="r-grid">
-          <div class="r-opt" data-group="budget" data-value="~$5,000" onclick="selRDiv(this,'budget')"><span class="r-dot"></span><span class="r-lbl">~$5,000</span></div>
-          <div class="r-opt" data-group="budget" data-value="~$10,000" onclick="selRDiv(this,'budget')"><span class="r-dot"></span><span class="r-lbl">~$10,000</span></div>
-          <div class="r-opt" data-group="budget" data-value="~$15,000" onclick="selRDiv(this,'budget')"><span class="r-dot"></span><span class="r-lbl">~$15,000</span></div>
-          <div class="r-opt" data-group="budget" data-value="~$20,000" onclick="selRDiv(this,'budget')"><span class="r-dot"></span><span class="r-lbl">~$20,000</span></div>
+        <div class="quiz-q">Выберите, какой формат услуг вам необходим?</div>
+        <div class="quiz-hint">Можно выбрать один или несколько вариантов. Обязательное поле.</div>
+        <div class="cb-grid q-service-grid">
+          <div class="cb-opt" data-group="service_format" data-value="Полное сопровождение и подготовка документов для визы талантов O-1 под ключ - от $10,000" onclick="toggleCbDiv(this)"><span class="cb-sq"></span><span class="cb-lbl">Полное сопровождение и подготовка документов для визы талантов O-1 под ключ - от $10,000</span></div>
+          <div class="cb-opt" data-group="service_format" data-value="Частичное закрытие недостающих критериев для визы талантов - ~$5,000" onclick="toggleCbDiv(this)"><span class="cb-sq"></span><span class="cb-lbl">Частичное закрытие недостающих критериев для визы талантов ~ $5,000</span></div>
+          <div class="cb-opt" data-group="service_format" data-value="Разбор кейса с иммиграционным специалистом - $100" onclick="toggleCbDiv(this)"><span class="cb-sq"></span><span class="cb-lbl">Разбор кейса с иммиграционным специалистом - $100</span></div>
         </div>
       </div>
 
       <div id="qs6" style="display:none">
         <div class="quiz-step-lbl">Шаг 6 из 6</div>
         <div class="quiz-q">Как с вами связаться?</div>
-        <div class="quiz-hint">Оставьте, пожалуйста, номер телефона, привязанный к WhatsApp или Telegram, чтобы мы могли договориться о консультации.</div>
+        <div class="quiz-hint">Выберите мессенджер и оставьте контакты. Номер телефона обязателен. Если выбираете Telegram, ник в Telegram тоже обязателен.</div>
+        <div class="cb-grid q-contact-grid">
+          <div class="cb-opt" data-group="contact_messenger" data-value="WhatsApp" onclick="toggleContactMessenger(this)"><span class="cb-sq"></span><span class="cb-lbl">WhatsApp</span></div>
+          <div class="cb-opt" data-group="contact_messenger" data-value="Telegram" onclick="toggleContactMessenger(this)"><span class="cb-sq"></span><span class="cb-lbl">Telegram</span></div>
+        </div>
+        <p class="q-note">Обязательное поле.</p>
         <input type="tel" class="q-input" id="q6_phone" placeholder="Номер телефона, привязанный к мессенджерам *" inputmode="tel">
-        <input type="text" class="q-input" id="q6_tg" placeholder="Ваш ник в Telegram (необязательно)">
+        <input type="text" class="q-input" id="q6_tg" placeholder="Ваш ник в Telegram *" style="display:none">
         <input type="text" class="q-input" id="q6_name" placeholder="Ваше имя">
         <p style="font-size:11px;color:rgba(20,18,16,.4);line-height:1.5;margin-top:14px;">Отправляя эту форму, вы соглашаетесь с <a href="https://talent-press.com/privacy" target="_blank" style="color:var(--gold);text-decoration:underline;">Политикой конфиденциальности</a> и обработкой персональных данных.</p>
       </div>
@@ -3466,20 +3475,17 @@ async function submitLead(data){
 
 /* MAIN FORM */
 document.getElementById('mainForm').addEventListener('submit',async function(e){
-  e.preventDefault();fillUtm(this);
-  var n=this.querySelector('[name="name"]'),p=this.querySelector('[name="phone"]');
-  if(!n.value.trim()){n.focus();return;}
-  if(!p.value.trim()||p.value.length<5){p.focus();return;}
-  var btn=document.getElementById('mainBtn');btn.disabled=true;btn.textContent='Отправляем...';
+  e.preventDefault();
   var data={};new FormData(this).forEach(function(v,k){data[k]=v;});
-  data.ts=new Date().toISOString();data.source='main_form';
-  try{
-    await submitLead(data);fire('form_lead_success');fireConv();
-    this.style.display='none';document.getElementById('mainOk').classList.add('show');
-  }catch(err){
-    btn.disabled=false;btn.textContent='Обсудить мой кейс →';
-    showLeadError('Не получилось отправить заявку. Попробуйте ещё раз или напишите нам в Telegram.');
+  openQuiz('contact_form');
+  if(data.sphere)document.getElementById('q1_sphere').value=data.sphere.trim();
+  if(data.phone)document.getElementById('q6_phone').value=data.phone.trim();
+  if(data.telegram){
+    document.getElementById('q6_tg').value=data.telegram.trim();
+    var tgOpt=document.querySelector('[data-group="contact_messenger"][data-value="Telegram"]');
+    if(tgOpt&&!tgOpt.classList.contains('sel'))toggleContactMessenger(tgOpt);
   }
+  if(data.name)document.getElementById('q6_name').value=data.name.trim();
 });
 
 /* FAQ */
@@ -3508,10 +3514,34 @@ function selRDiv(el,group){
   document.querySelectorAll('[data-group="'+group+'"]').forEach(function(e){e.classList.remove('sel');});
   el.classList.add('sel');
 }
+function selectedValues(group){
+  return Array.from(document.querySelectorAll('[data-group="'+group+'"].sel')).map(function(el){return el.dataset.value;});
+}
+function toggleContactMessenger(el){
+  toggleCbDiv(el);
+  var hasTelegram=selectedValues('contact_messenger').indexOf('Telegram')>-1;
+  var tg=document.getElementById('q6_tg');
+  tg.style.display=hasTelegram?'block':'none';
+  if(!hasTelegram)tg.value='';
+}
+function resetQuiz(){
+  qStep=1;
+  qData={};
+  document.querySelectorAll('#quizBody input,#quizBody textarea').forEach(function(el){el.value='';});
+  document.querySelectorAll('#quizBody .sel').forEach(function(el){el.classList.remove('sel');});
+  document.getElementById('q6_tg').style.display='none';
+  document.getElementById('quizBody').style.display='block';
+  document.getElementById('quizFoot').style.display='flex';
+  document.getElementById('quizSucc').style.display='none';
+  var nextBtn=document.getElementById('btnNext');
+  nextBtn.disabled=false;
+  nextBtn.textContent='Далее →';
+}
 
 function openQuiz(src){
   closeMobileMenu();
   qSource=src||'';
+  resetQuiz();
   document.getElementById('quizOv').classList.add('open');
   document.body.style.overflow='hidden';
   fire('quiz_open');
@@ -3540,8 +3570,12 @@ function collectStep(n){
   if(n===2){qData.experience=document.getElementById('q2_experience').value.trim();}
   if(n===3){qData.us_status=document.getElementById('q3_status').value.trim();}
   if(n===4){qData.missing_criteria=document.getElementById('q4_criteria').value.trim();}
-  if(n===5){var b=document.querySelector('[data-group="budget"].sel');qData.budget=b?b.dataset.value:'';}
+  if(n===5){
+    var services=selectedValues('service_format');
+    qData.service_format=services.join('; ');
+  }
   if(n===6){
+    qData.contact_messenger=selectedValues('contact_messenger').join(', ');
     qData.phone=document.getElementById('q6_phone').value.trim();
     qData.telegram=document.getElementById('q6_tg').value.trim();
     qData.name=document.getElementById('q6_name').value.trim();
@@ -3550,8 +3584,14 @@ function collectStep(n){
 
 async function qNext(){
   collectStep(qStep);
+  if(qStep===1&&!qData.sphere){document.getElementById('q1_sphere').focus();return;}
+  if(qStep===2&&!qData.experience){document.getElementById('q2_experience').focus();return;}
+  if(qStep===3&&!qData.us_status){document.getElementById('q3_status').focus();return;}
+  if(qStep===5&&!qData.service_format){showLeadError('Выберите, пожалуйста, какой формат услуг вам необходим.');return;}
   if(qStep===qTotal){
+    if(!qData.contact_messenger){showLeadError('Выберите, пожалуйста, удобный мессенджер: WhatsApp или Telegram.');return;}
     if(!qData.phone||qData.phone.length<5){document.getElementById('q6_phone').focus();return;}
+    if(qData.contact_messenger.indexOf('Telegram')>-1&&!qData.telegram){document.getElementById('q6_tg').focus();return;}
     var nextBtn=document.getElementById('btnNext');nextBtn.disabled=true;nextBtn.textContent='Отправляем...';
     var p=new URLSearchParams(window.location.search);
     ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){qData[k]=p.get(k)||'';});
