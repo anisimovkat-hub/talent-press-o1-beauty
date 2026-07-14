@@ -49,5 +49,6 @@ When making future landing-page edits, preserve:
 - successful-form logic that calls `fireConv()` for the Meta Pixel Lead event
 - the `functions/api/amo/oauth.js` callback used to refresh amoCRM access
 - the `AMO_TOKENS` KV binding in `wrangler.toml`
+- amoCRM lead field population in `functions/api/lead.js`: lead data should be written into amoCRM deal/contact fields and tags, with notes used only as a backup copy of the full request
 
 After any change that touches forms, scripts, Cloudflare Functions, or `wrangler.toml`, send a clearly marked test lead and verify that it appears in both Telegram and amoCRM before considering the work complete.
