@@ -3288,6 +3288,12 @@ alt=""></noscript>
           <input type="text" name="telegram" class="fi ym-disable-keys" placeholder="Ник в Telegram (необязательно)">
           <input type="text" name="portfolio" class="fi ym-disable-keys" placeholder="LinkedIn / сайт / Instagram / портфолио">
           <input type="text" name="sphere" class="fi ym-disable-keys" placeholder="Ваша профессиональная сфера">
+          <select name="service_format" class="fi ym-disable-keys" required>
+            <option value="" selected disabled>Какая услуга вас интересует? *</option>
+            <option value="Полное сопровождение и подготовка документов для визы талантов O-1 под ключ - от $10,000">Виза талантов под ключ - $10,000</option>
+            <option value="Частичное закрытие недостающих критериев для визы талантов - ~$5,000">Частичное закрытие критериев ~ $5,000</option>
+            <option value="Разбор кейса с иммиграционным специалистом - $100">Разбор кейса с иммиграционным специалистом - $100</option>
+          </select>
           <input type="hidden" name="utm_source"><input type="hidden" name="utm_medium">
           <input type="hidden" name="utm_campaign"><input type="hidden" name="utm_content">
           <input type="hidden" name="utm_term"><input type="hidden" name="page_url">
@@ -3479,6 +3485,12 @@ document.getElementById('mainForm').addEventListener('submit',async function(e){
   var data={};new FormData(this).forEach(function(v,k){data[k]=v;});
   openQuiz('contact_form');
   if(data.sphere)document.getElementById('q1_sphere').value=data.sphere.trim();
+  if(data.service_format){
+    var serviceOpt=Array.prototype.find.call(document.querySelectorAll('[data-group="service_format"]'),function(opt){
+      return opt.getAttribute('data-value')===data.service_format;
+    });
+    if(serviceOpt&&!serviceOpt.classList.contains('sel'))toggleCbDiv(serviceOpt);
+  }
   if(data.phone)document.getElementById('q6_phone').value=data.phone.trim();
   if(data.telegram){
     document.getElementById('q6_tg').value=data.telegram.trim();
