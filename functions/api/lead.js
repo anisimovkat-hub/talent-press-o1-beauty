@@ -1,5 +1,58 @@
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
 const AMO_TOKEN_KEY = 'oauth';
+const AMO_FIELD_CACHE_TTL = 10 * 60 * 1000;
+const amoFieldCache = new Map();
+
+const LEAD_FIELD_MAP = [
+  {
+    key: 'sphere',
+    aliases: ['по какой профессии', 'профессии или сфере', 'профессиональная сфера', 'сфера экспертизы', 'сфера'],
+  },
+  {
+    key: 'experience',
+    aliases: ['сколько у вас лет опыта', 'сколько у вас лет', 'опыт'],
+  },
+  {
+    key: 'us_status',
+    aliases: ['где вы сейчас находитесь', 'юридический статус', 'статус локация', 'статус в сша', 'в каком статусе'],
+  },
+  {
+    key: 'missing_criteria',
+    aliases: ['чего не хватает', 'не хватает для сильного', 'недостающие критерии', 'критерии'],
+  },
+  {
+    key: 'service_format',
+    aliases: ['формат услуг', 'какой формат услуг', 'какая услуга', 'услуга интересует', 'формат работы'],
+  },
+  {
+    key: 'budget',
+    aliases: ['бюджет', 'budget', 'во сколько', 'стоимость'],
+  },
+  {
+    key: 'contact_messenger',
+    aliases: ['messenger type', 'messenger-type', 'мессенджер', 'как с вами связаться', 'предпочтительный мессенджер'],
+  },
+  {
+    key: 'telegram',
+    aliases: ['telegram', 'ник в telegram', 'ваш ник', 'messenger id', 'messenger-id'],
+  },
+  {
+    key: 'portfolio',
+    aliases: ['портфолио', 'linkedin', 'instagram', 'сайт'],
+  },
+  {
+    key: 'quiz_source',
+    aliases: ['источник формы', 'источник заявки', 'form source', 'source'],
+  },
+  {
+    key: 'page_url',
+    aliases: ['страница', 'page url', 'page_url', 'url'],
+  },
+  ...UTM_KEYS.map((key) => ({
+    key,
+    aliases: [key, key.replace('_', ' ')],
+  })),
+];
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -17,6 +70,128 @@ function clean(value) {
 
 function cleanLong(value) {
   return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 2000);
+}
+
+function normalizeFieldText(value) {
+  return cleanLong(value)
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[_-]+/g, ' ')
+    .replace(/[^\p{L}\p{N}$]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function aliasMatches(haystack, alias) {
+  const prepared = normalizeFieldText(alias);
+  if (!prepared) {
+    return false;
+  }
+
+  if (haystack.includes(prepared)) {
+    return true;
+  }
+
+  const tokens = prepared.split(' ').filter((token) => token.length > 2);
+  return tokens.length > 0 && tokens.every((token) => haystack.includes(token));
+}
+
+function findAmoField(fields, aliases, usedFieldIds) {
+  return fields.find((field) => {
+    if (usedFieldIds.has(field.id)) {
+      return false;
+    }
+
+    const haystack = normalizeFieldText([
+      field.name,
+      field.code,
+      field.field_code,
+    ].filter(Boolean).join(' '));
+
+    return aliases.some((alias) => aliasMatches(haystack, alias));
+  });
+}
+
+function buildAmoCustomFieldValue(field, rawValue) {
+  const value = cleanLong(rawValue);
+  if (!field || !value) {
+    return null;
+  }
+
+  const type = String(field.type || '').toLowerCase();
+  if (['select', 'radiobutton', 'multiselect'].includes(type)) {
+    const chunks = value.split(/[;,]/).map(clean).filter(Boolean);
+    const enums = Array.isArray(field.enums) ? field.enums : [];
+    const values = chunks
+      .map((chunk) => {
+        const matched = enums.find((item) => aliasMatches(normalizeFieldText(item.value), chunk));
+        return matched ? { value: matched.value, enum_id: matched.id } : null;
+      })
+      .filter(Boolean);
+
+    return values.length ? { field_id: field.id, values } : null;
+  }
+
+  if (['numeric', 'monetary'].includes(type)) {
+    const amount = parseAmoNumber(value);
+    return Number.isFinite(amount) ? { field_id: field.id, values: [{ value: amount }] } : null;
+  }
+
+  return { field_id: field.id, values: [{ value }] };
+}
+
+function parseAmoNumber(value) {
+  const prepared = clean(value).replace(/[^\d.,-]/g, '');
+  if (!prepared) {
+    return NaN;
+  }
+
+  const normalized = /,\d{3}(?:\D|$)/.test(prepared)
+    ? prepared.replace(/,/g, '')
+    : prepared.replace(',', '.');
+
+  return Number(normalized);
+}
+
+function parseLeadPrice(payload) {
+  const source = [
+    payload.service_format,
+    payload.budget,
+  ].map(cleanLong).join(' ');
+
+  if (source.includes('10,000') || source.includes('10000') || source.includes('10 000')) {
+    return 10000;
+  }
+
+  if (source.includes('5,000') || source.includes('5000') || source.includes('5 000')) {
+    return 5000;
+  }
+
+  if (source.includes('$100') || source.includes(' 100') || source.includes('- 100')) {
+    return 100;
+  }
+
+  return 0;
+}
+
+function buildAmoTags(payload) {
+  const tags = ['beauty-o-1.com'];
+  const source = clean(payload.quiz_source || payload.form_source || payload.source);
+  const service = cleanLong(payload.service_format).toLowerCase();
+
+  if (source) {
+    tags.push(source === 'quiz' ? 'quiz' : `source: ${source}`);
+  }
+
+  if (service.includes('под ключ')) {
+    tags.push('O-1 под ключ');
+  } else if (service.includes('частич')) {
+    tags.push('частичное закрытие критериев');
+  } else if (service.includes('разбор')) {
+    tags.push('разбор кейса');
+  }
+
+  return [...new Set(tags)].map((name) => ({ name }));
 }
 
 function escapeHtml(value) {
@@ -209,6 +384,64 @@ async function amoRequest(env, path, options = {}) {
   return response.status === 204 ? null : response.json();
 }
 
+async function getAmoCustomFields(env, entity) {
+  const cacheKey = `${getAmoBaseUrl(env)}:${entity}`;
+  const cached = amoFieldCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < AMO_FIELD_CACHE_TTL) {
+    return cached.fields;
+  }
+
+  const fields = [];
+  let page = 1;
+
+  while (page <= 10) {
+    const data = await amoRequest(env, `/api/v4/${entity}/custom_fields?limit=250&page=${page}`, {
+      method: 'GET',
+    });
+
+    const batch = data?._embedded?.custom_fields || [];
+    fields.push(...batch);
+
+    if (!data?._links?.next?.href || batch.length === 0) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  amoFieldCache.set(cacheKey, { ts: Date.now(), fields });
+  return fields;
+}
+
+async function amoLeadFields(env, payload, request) {
+  const fields = await getAmoCustomFields(env, 'leads');
+  const usedFieldIds = new Set();
+  const customFields = [];
+  const price = parseLeadPrice(payload);
+  const preparedPayload = {
+    ...payload,
+    budget: payload.budget || (price ? String(price) : ''),
+    quiz_source: payload.quiz_source || payload.form_source || payload.source,
+    page_url: payload.page_url || request.headers.get('referer'),
+  };
+
+  for (const item of LEAD_FIELD_MAP) {
+    const value = preparedPayload[item.key];
+    if (!cleanLong(value)) {
+      continue;
+    }
+
+    const field = findAmoField(fields, item.aliases, usedFieldIds);
+    const customField = buildAmoCustomFieldValue(field, value);
+    if (customField) {
+      usedFieldIds.add(field.id);
+      customFields.push(customField);
+    }
+  }
+
+  return customFields;
+}
+
 function amoContactFields(payload) {
   const fields = [];
   const phone = clean(payload.phone);
@@ -239,10 +472,19 @@ async function sendAmoCrm(env, payload, request) {
   const name = clean(payload.name) || clean(payload.telegram) || clean(payload.phone) || 'Лид с сайта';
   const source = clean(payload.source || 'main_form');
   const leadTitle = source === 'quiz' ? `Квиз O-1 Beauty - ${name}` : `Заявка O-1 Beauty - ${name}`;
+  let leadFields = [];
+  try {
+    leadFields = await amoLeadFields(env, payload, request);
+  } catch (error) {
+    console.error('amoCRM field mapping skipped', error);
+  }
+  const price = parseLeadPrice(payload);
   const complexLead = [{
     name: leadTitle,
+    ...(price ? { price } : {}),
+    ...(leadFields.length ? { custom_fields_values: leadFields } : {}),
     _embedded: {
-      tags: [{ name: 'beauty-o-1.com' }],
+      tags: buildAmoTags(payload),
       contacts: [{
         name,
         custom_fields_values: amoContactFields(payload),
