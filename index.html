@@ -1260,7 +1260,12 @@ footer {
 .quiz-success { text-align:center; padding:52px 32px; }
 .quiz-success .ic { font-size:52px; margin-bottom:16px; display:block; }
 .quiz-success h3 { font-family:var(--serif); font-size:32px; color:var(--ink); margin-bottom:10px; letter-spacing:-.01em; }
-.quiz-success p { font-size:15px; color:rgba(20,18,16,.5); line-height:1.7; max-width:380px; margin:0 auto; }
+.quiz-success p { font-size:15px; color:rgba(20,18,16,.5); line-height:1.7; max-width:430px; margin:0 auto; }
+.quiz-success-actions { display:flex; justify-content:center; gap:10px; margin-top:24px; }
+.quiz-success-link { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:12px 18px; font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.04em; text-decoration:none; transition:all .2s; }
+.quiz-success-link.is-whatsapp { background:var(--gold); color:var(--ink); }
+.quiz-success-link.is-telegram { background:var(--cream); border:1px solid rgba(166,124,82,.35); color:var(--ink); }
+.quiz-success-link:hover { transform:translateY(-1px); }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    STICKY
@@ -1375,6 +1380,10 @@ footer {
   .why-metrics { grid-template-columns:1fr 1fr; }
   .quiz-body { padding:28px 22px 20px; }
   .quiz-foot { padding:14px 22px 22px; }
+  .quiz-success { padding:40px 22px; }
+  .quiz-success h3 { font-size:28px; }
+  .quiz-success-actions { flex-direction:column; }
+  .quiz-success-link { width:100%; }
   .approach-banner { grid-template-columns:1fr; }
   .approach-banner-photo { display:none; }
   .approach-banner-left { padding:40px 24px; }
@@ -3421,8 +3430,12 @@ alt=""></noscript>
     </div>
     <div class="quiz-success" id="quizSucc" style="display:none">
       <span class="ic">✓</span>
-      <h3>Анкета отправлена!</h3>
-      <p>Мы получили ваши ответы и свяжемся в течение 24 часов, чтобы обсудить ваш профиль и реальные шансы на O-1.</p>
+      <h3>Спасибо, ваша заявка принята.</h3>
+      <p>Чтобы вам быстрее ответили, напишите нам, пожалуйста, в мессенджере по кнопкам ниже.</p>
+      <div class="quiz-success-actions">
+        <a class="quiz-success-link is-whatsapp" href="https://wa.me/491601113035?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B8%D1%82%D1%8C%20%D0%BA%D0%BE%D0%BD%D1%81%D1%83%D0%BB%D1%8C%D1%82%D0%B0%D1%86%D0%B8%D1%8E%20%D0%BF%D0%BE%20%D0%B2%D0%B8%D0%B7%D0%B5%20%D0%9E-1%20%D0%B4%D0%BB%D1%8F%20%D0%B1%D1%8C%D1%8E%D1%82%D0%B8-%D1%81%D0%BF%D0%B5%D1%86%D0%B8%D0%B0%D0%BB%D0%B8%D1%81%D1%82%D0%BE%D0%B2." target="_blank" rel="noopener">Написать в WhatsApp</a>
+        <a class="quiz-success-link is-telegram" href="https://t.me/m/WIXp5-Y0NGMy" target="_blank" rel="noopener">Написать в Telegram</a>
+      </div>
     </div>
   </div>
 </div>
