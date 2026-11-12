@@ -1,5 +1,6 @@
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
 const AMO_TOKEN_KEY = 'oauth';
+const MAIN_SITE_SOURCE = 'talent_press_site';
 const AMO_FIELD_CACHE_TTL = 10 * 60 * 1000;
 const amoFieldCache = new Map();
 
@@ -175,7 +176,7 @@ function parseLeadPrice(payload) {
 }
 
 function buildAmoTags(payload) {
-  const tags = ['beauty-o-1.com'];
+  const tags = [payload.source === MAIN_SITE_SOURCE ? 'talent-press.com' : 'beauty-o-1.com'];
   const source = clean(payload.quiz_source || payload.form_source || payload.source);
   const service = cleanLong(payload.service_format).toLowerCase();
 
@@ -209,7 +210,8 @@ function row(label, value) {
 
 function buildMessage(payload, request) {
   const source = clean(payload.source || 'main_form');
-  const title = source === 'quiz' ? 'Новая заявка из квиза Talent Press' : 'Новая заявка Talent Press';
+  const title = source === MAIN_SITE_SOURCE ? 'Новая заявка с talent-press.com' :
+    source === 'quiz' ? 'Новая заявка из квиза Talent Press' : 'Новая заявка Talent Press';
   const lines = [
     `<b>${title}</b>`,
     '',
@@ -229,6 +231,7 @@ function buildMessage(payload, request) {
     ...UTM_KEYS.map((key) => row(key, payload[key])).filter(Boolean),
     row('Страница', payload.page_url || request.headers.get('referer')),
     row('Время', payload.ts || new Date().toISOString()),
+    row('Анкета', payload.site_details),
   ].filter(Boolean);
 
   return lines.join('\n');
@@ -242,7 +245,7 @@ function plainRow(label, value) {
 function buildPlainLeadText(payload, request) {
   const source = clean(payload.source || 'main_form');
   return [
-    'Заявка с сайта beauty-o-1.com',
+    source === MAIN_SITE_SOURCE ? 'Заявка с talent-press.com' : 'Заявка с сайта beauty-o-1.com',
     '',
     plainRow('Имя', payload.name),
     plainRow('Телефон / мессенджер', payload.phone),
@@ -260,6 +263,7 @@ function buildPlainLeadText(payload, request) {
     ...UTM_KEYS.map((key) => plainRow(key, payload[key])).filter(Boolean),
     plainRow('Страница', payload.page_url || request.headers.get('referer')),
     plainRow('Время', payload.ts || new Date().toISOString()),
+    plainRow('Анкета', payload.site_details),
   ].filter(Boolean).join('\n');
 }
 
@@ -471,12 +475,13 @@ async function sendAmoCrm(env, payload, request) {
 
   const name = clean(payload.name) || clean(payload.telegram) || clean(payload.phone) || 'Лид с сайта';
   const source = clean(payload.source || 'main_form');
-  const leadTitle = source === 'quiz' ? `Квиз O-1 Beauty - ${name}` : `Заявка O-1 Beauty - ${name}`;
+  const leadTitle = source === MAIN_SITE_SOURCE ? `Talent Press — ${name}` : source === 'quiz' ? `Квиз O-1 Beauty - ${name}` : `Заявка O-1 Beauty - ${name}`;
   let leadFields = [];
   try {
     leadFields = await amoLeadFields(env, payload, request);
   } catch (error) {
-    console.error('amoCRM field mapping skipped', error);
+    if (source === MAIN_SITE_SOURCE) console.error('Talent Press: amoCRM field mapping skipped');
+    else console.error('amoCRM field mapping skipped', error);
   }
   const price = parseLeadPrice(payload);
   const complexLead = [{
@@ -499,18 +504,37 @@ async function sendAmoCrm(env, payload, request) {
 
   const leadId = created?.[0]?.id || created?._embedded?.leads?.[0]?.id;
   if (leadId) {
-    await amoRequest(env, `/api/v4/leads/${leadId}/notes`, {
-      method: 'POST',
-      body: JSON.stringify([{
-        note_type: 'common',
-        params: {
-          text: buildPlainLeadText(payload, request),
-        },
-      }]),
-    });
+    try {
+      await amoRequest(env, `/api/v4/leads/${leadId}/notes`, {
+        method: 'POST',
+        body: JSON.stringify([{
+          note_type: 'common',
+          params: {
+            text: buildPlainLeadText(payload, request),
+          },
+        }]),
+      });
+    } catch (error) {
+      if (source !== MAIN_SITE_SOURCE) throw error;
+      console.error('Talent Press: amoCRM note could not be saved');
+    }
   }
 
   return { skipped: false, leadId };
+}
+
+export async function deliverSiteLead(env, payload, request) {
+  const lead = { ...payload, source: MAIN_SITE_SOURCE };
+  const { leadId } = await sendAmoCrm(env, lead, request);
+  if (!leadId) throw new Error('amoCRM did not confirm the lead');
+
+  try {
+    await sendTelegram(env, buildMessage(lead, request));
+    return { telegram: true };
+  } catch {
+    console.error('Talent Press: Telegram notification could not be delivered');
+    return { telegram: false };
+  }
 }
 
 export async function onRequestPost({ request, env }) {
