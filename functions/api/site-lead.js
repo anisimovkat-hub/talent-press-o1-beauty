@@ -110,11 +110,7 @@ export async function onRequest({ request, env }) {
   } catch {
     return reply(400, { ok: false }, origin);
   }
-  try {
-    const delivery = await deliverSiteLead(env, lead, request);
-    return reply(200, { ok: true, telegram: delivery.telegram }, origin);
-  } catch {
-    console.error('Talent Press: amoCRM did not accept the lead');
-    return reply(502, { ok: false }, origin);
-  }
+  const delivery = await deliverSiteLead(env, lead, request);
+  const ok = delivery.amo || delivery.telegram;
+  return reply(ok ? 200 : 502, { ok, ...delivery }, origin);
 }

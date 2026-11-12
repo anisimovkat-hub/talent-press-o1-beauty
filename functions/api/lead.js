@@ -525,16 +525,15 @@ async function sendAmoCrm(env, payload, request) {
 
 export async function deliverSiteLead(env, payload, request) {
   const lead = { ...payload, source: MAIN_SITE_SOURCE };
-  const { leadId } = await sendAmoCrm(env, lead, request);
-  if (!leadId) throw new Error('amoCRM did not confirm the lead');
-
-  try {
-    await sendTelegram(env, buildMessage(lead, request));
-    return { telegram: true };
-  } catch {
-    console.error('Talent Press: Telegram notification could not be delivered');
-    return { telegram: false };
-  }
+  const [amoResult, telegramResult] = await Promise.allSettled([
+    sendAmoCrm(env, lead, request),
+    sendTelegram(env, buildMessage(lead, request)),
+  ]);
+  const amo = amoResult.status === 'fulfilled' && Boolean(amoResult.value?.leadId);
+  const telegram = telegramResult.status === 'fulfilled';
+  if (!amo) console.error('Talent Press: amoCRM did not accept the lead');
+  if (!telegram) console.error('Talent Press: Telegram notification could not be delivered');
+  return { amo, telegram };
 }
 
 export async function onRequestPost({ request, env }) {
