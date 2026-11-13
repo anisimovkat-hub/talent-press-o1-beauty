@@ -1,7 +1,10 @@
 import { deliverSiteLead } from './lead.js';
 
 const liveOrigins = new Set(['https://talent-press.com', 'https://www.talent-press.com']);
-const previewOrigin = 'https://anisimovkat-hub.github.io';
+const previewOrigins = new Set([
+  'https://anisimovkat-hub.github.io',
+  'https://talent-press.github.io',
+]);
 const maxBodyBytes = 16 * 1024;
 const additionalAnswers = {
   city: 'Город',
@@ -59,7 +62,7 @@ function toLead(input, origin) {
   ) throw new Error('Invalid lead');
 
   const page = new URL(clean(input.page, 1000));
-  if (page.origin !== origin || (origin === previewOrigin && !page.pathname.startsWith('/talent-press-preview/'))) {
+  if (page.origin !== origin || (previewOrigins.has(origin) && !page.pathname.startsWith('/talent-press-preview/'))) {
     throw new Error('Invalid page');
   }
   const fields = {
@@ -91,7 +94,7 @@ function toLead(input, origin) {
 
 export async function onRequest({ request, env }) {
   const origin = request.headers.get('Origin');
-  const allowed = liveOrigins.has(origin) || (env.SITE_LEADS_PREVIEW === 'true' && origin === previewOrigin);
+  const allowed = liveOrigins.has(origin) || (env.SITE_LEADS_PREVIEW === 'true' && previewOrigins.has(origin));
   if (!allowed) return reply(403, { ok: false });
   if (request.method === 'OPTIONS') {
     const response = reply(204, null, origin);
